@@ -100,10 +100,10 @@ def extract_hrefs(list_html: str) -> list[str]:
     hrefs: list[str] = []
     seen: set[str] = set()
     for anchor in soup.select("a.js-headline-text"):
-        href = anchor.get("href")
-        if not href:
+        raw_href = anchor.get("href")
+        if not isinstance(raw_href, str) or not raw_href:
             continue
-        href = urljoin(BASE_URL, href)
+        href = urljoin(BASE_URL, raw_href)
         if href in seen:
             LOG.warning("Duplicate href skipped: %s", href)
             continue
@@ -190,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
 
         day = published or start
-        target_dir = out_dir / day.strftime(DATE_DIR_FORMAT)
+        target_dir = out_dir / f"{day.month:02d}" / day.strftime(DATE_DIR_FORMAT)
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{mnemocode}.md"
         target.write_text(markdown, encoding="utf-8")
